@@ -159,3 +159,26 @@ def get_reservation(reservation_id: int,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
     return get_team_reservation(db, reservation_id, user)
+
+
+@router.post("/{reservation_id}/cancel", response_model=ReservationOut)
+def cancel_reservation(reservation_id: int,
+                       user: User = Depends(require_roles("LEAD")),
+                       db: Session = Depends(get_db)):
+    """Anulare de catre Team Lead, doar daca rezervarea nu a inceput."""
+    reservation = get_team_reservation(db, reservation_id, user)
+    if reservation.status == "CANCELLED":
+        raise HTTPException(status_code=409,
+                            detail="Rezervarea este deja anulata")
+    if reservation.start_time <= datetime.now():
+        raise HTTPException(
+            status_code=409,
+            detail="Rezervarea a inceput deja si nu mai poate fi anulata",
+        )
+
+    reservation.status = "CANCELLED"
+    notify_team(db, reservation.team_id,
+                f"Rezervare anulata: {describe(reservation)}")
+    db.commit()
+    db.refresh(reservation)
+    return reservation
