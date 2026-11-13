@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-schimba-in-env")
+JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-doar-pentru-local-schimba-in-fisierul-env")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))
 
