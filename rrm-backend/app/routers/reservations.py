@@ -1,10 +1,11 @@
 from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import require_roles
+from app.deps import get_current_user, require_roles
 from app.models import Reservation, Resource, User
 from app.schemas import ReservationIn, ReservationOut, SlotOut
 from app.services.notifications import notify_team
@@ -136,3 +137,25 @@ def confirm_reservation(reservation_id: int,
     db.commit()
     db.refresh(reservation)
     return reservation
+
+
+@router.get("", response_model=list[ReservationOut])
+def get_team_reservations(status: str | None = None,
+                          user: User = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    """Rezervarile echipei utilizatorului logat (adminul le vede pe toate)."""
+    query = select(Reservation).order_by(Reservation.start_time.desc())
+    if user.role != "ADMIN":
+        if user.team_id is None:
+            return []
+        query = query.where(Reservation.team_id == user.team_id)
+    if status:
+        query = query.where(Reservation.status == status.upper())
+    return db.scalars(query).all()
+
+
+@router.get("/{reservation_id}", response_model=ReservationOut)
+def get_reservation(reservation_id: int,
+                    user: User = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    return get_team_reservation(db, reservation_id, user)
