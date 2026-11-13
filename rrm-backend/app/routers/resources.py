@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.deps import require_roles
 from app.models import Category, Resource
 from app.schemas import CategoryOut, ResourceIn, ResourceOut
 
@@ -33,7 +34,9 @@ def get_resource(resource_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/resources", response_model=ResourceOut, status_code=201)
-def create_resource(data: ResourceIn, db: Session = Depends(get_db)):
+def create_resource(data: ResourceIn,
+                    _admin=Depends(require_roles("ADMIN")),
+                    db: Session = Depends(get_db)):
     resource = Resource(**data.model_dump())
     db.add(resource)
     try:
@@ -47,6 +50,7 @@ def create_resource(data: ResourceIn, db: Session = Depends(get_db)):
 
 @router.put("/resources/{resource_id}", response_model=ResourceOut)
 def update_resource(resource_id: int, data: ResourceIn,
+                    _admin=Depends(require_roles("ADMIN")),
                     db: Session = Depends(get_db)):
     resource = db.get(Resource, resource_id)
     if resource is None:
@@ -63,7 +67,9 @@ def update_resource(resource_id: int, data: ResourceIn,
 
 
 @router.delete("/resources/{resource_id}", status_code=204)
-def delete_resource(resource_id: int, db: Session = Depends(get_db)):
+def delete_resource(resource_id: int,
+                    _admin=Depends(require_roles("ADMIN")),
+                    db: Session = Depends(get_db)):
     resource = db.get(Resource, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Resursa nu exista")
