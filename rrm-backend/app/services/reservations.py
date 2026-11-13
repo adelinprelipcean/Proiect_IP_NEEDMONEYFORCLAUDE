@@ -49,3 +49,12 @@ def find_conflict(db: Session, resource_id: int, start_time: datetime,
                                 exclude_id):
         return "Intervalul este deja rezervat"
     return None
+
+
+def describe(reservation: Reservation) -> str:
+    """Text scurt pentru notificari, ex: 'Sala C204, 20.11.2026 10:00-12:00'."""
+    start, end = reservation.start_time, reservation.end_time
+    interval = f"{start:%d.%m.%Y %H:%M}-{end:%H:%M}"
+    if start.date() != end.date():
+        interval = f"{start:%d.%m.%Y %H:%M} - {end:%d.%m.%Y %H:%M}"
+    return f"{reservation.resource_name}, {interval}"

@@ -7,8 +7,10 @@ from app.database import get_db
 from app.deps import require_roles
 from app.models import Reservation, Resource, User
 from app.schemas import ReservationIn, ReservationOut, SlotOut
+from app.services.notifications import notify_team
 from app.services.pricing import calculate_price
-from app.services.reservations import (find_conflict, overlapping_maintenance,
+from app.services.reservations import (describe, find_conflict,
+                                       overlapping_maintenance,
                                        overlapping_reservations)
 
 router = APIRouter(prefix="/api/reservations", tags=["Reservations"])
@@ -92,6 +94,45 @@ def create_reservation(data: ReservationIn,
         status="PENDING",
     )
     db.add(reservation)
+    db.commit()
+    db.refresh(reservation)
+    return reservation
+
+
+def get_team_reservation(db: Session, reservation_id: int,
+                         user: User) -> Reservation:
+    reservation = db.get(Reservation, reservation_id)
+    if reservation is None:
+        raise HTTPException(status_code=404, detail="Rezervarea nu exista")
+    if user.role != "ADMIN" and reservation.team_id != user.team_id:
+        raise HTTPException(status_code=403,
+                            detail="Rezervarea nu apartine echipei tale")
+    return reservation
+
+
+@router.post("/{reservation_id}/confirm", response_model=ReservationOut)
+def confirm_reservation(reservation_id: int,
+                        user: User = Depends(require_roles("LEAD")),
+                        db: Session = Depends(get_db)):
+    """PENDING -> CONFIRMED. Membrii echipei primesc notificare."""
+    reservation = get_team_reservation(db, reservation_id, user)
+    if reservation.status != "PENDING":
+        raise HTTPException(status_code=409,
+                            detail="Doar rezervarile PENDING pot fi confirmate")
+    if reservation.start_time <= datetime.now():
+        reservation.status = "CANCELLED"
+        db.commit()
+        raise HTTPException(status_code=410, detail="Rezervarea a expirat")
+
+    conflict = find_conflict(db, reservation.resource_id,
+                             reservation.start_time, reservation.end_time,
+                             exclude_id=reservation.id)
+    if conflict:
+        raise HTTPException(status_code=409, detail=conflict)
+
+    reservation.status = "CONFIRMED"
+    notify_team(db, reservation.team_id,
+                f"Rezervare confirmata: {describe(reservation)}")
     db.commit()
     db.refresh(reservation)
     return reservation
