@@ -84,6 +84,14 @@ class ReservationIn(BaseModel):
     start_time: datetime
     end_time: datetime
 
+    @field_validator("start_time", "end_time")
+    @classmethod
+    def to_local_naive(cls, value: datetime) -> datetime:
+        # in baza orele sunt salvate fara fus orar (ora locala)
+        if value.tzinfo is not None:
+            value = value.astimezone().replace(tzinfo=None)
+        return value
+
     @model_validator(mode="after")
     def check_interval(self):
         if self.end_time <= self.start_time:
