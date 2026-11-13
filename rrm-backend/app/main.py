@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import resources
+from app.routers import auth, resources, users
 
 app = FastAPI(title="Research Resource Manager API")
 
@@ -12,6 +12,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+app.include_router(users.router)
 app.include_router(resources.router)
 
 
