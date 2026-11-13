@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -59,3 +59,13 @@ class UserOut(BaseModel):
 class LoginResponse(BaseModel):
     token: str
     user: UserOut
+
+
+class NotificationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    message: str
+    is_read: bool
+    created_at: datetime
