@@ -229,3 +229,33 @@ h3 {
   margin: 8px 0 0;
   font-weight: 600;
 }
+
+/* Detalii resursa */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.details-header h1 {
+  margin-top: 8px;
+}
+
+.details-price {
+  font-size: 22px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.simple-list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.8;
+}

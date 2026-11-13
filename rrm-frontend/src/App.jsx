@@ -1,6 +1,7 @@
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import CatalogPage from './pages/CatalogPage.jsx';
+import ResourceDetailsPage from './pages/ResourceDetailsPage.jsx';
 
 /**
  * Rutele aplicatiei.
@@ -12,6 +13,10 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<CatalogPage />} />
+          <Route
+            path="/resources/:resourceId"
+            element={<ResourceDetailsPage />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>
