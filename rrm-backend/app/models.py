@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from sqlalchemy import (Boolean, Date, DateTime, ForeignKey, Numeric, String,
                         Text, func)
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -66,3 +66,24 @@ class Notification(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now()
     )
+
+
+class Reservation(Base):
+    __tablename__ = "reservations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    resource_id: Mapped[int] = mapped_column(ForeignKey("resources.id"))
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    start_time: Mapped[datetime] = mapped_column(DateTime)
+    end_time: Mapped[datetime] = mapped_column(DateTime)
+    price: Mapped[float | None] = mapped_column(Numeric(10, 2))
+    discount: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
+    final_price: Mapped[float | None] = mapped_column(Numeric(10, 2))
+    status: Mapped[str] = mapped_column(String(20), default="PENDING")
+
+    resource: Mapped["Resource"] = relationship()
+
+    @property
+    def resource_name(self) -> str | None:
+        return self.resource.name if self.resource else None
