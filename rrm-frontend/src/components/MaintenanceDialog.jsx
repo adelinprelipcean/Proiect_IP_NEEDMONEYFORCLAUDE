@@ -60,7 +60,9 @@ export default function MaintenanceDialog({resource, onClose, onSaved}) {
       });
       onSaved(result);
     } catch (e) {
-      setError(e.message);
+      setError(e.status === 405 ?
+        'Salvarea mentenantei nu este inca disponibila in backend.' :
+        e.message);
     } finally {
       setSaving(false);
     }
