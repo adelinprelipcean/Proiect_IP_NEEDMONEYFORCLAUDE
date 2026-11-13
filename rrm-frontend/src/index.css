@@ -259,3 +259,47 @@ h3 {
   padding-left: 18px;
   line-height: 1.8;
 }
+
+/* Tabel rezervari */
+.table-wrapper {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table th {
+  color: var(--color-muted);
+  font-weight: 600;
+  background: var(--color-bg);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-pending {
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.status-confirmed {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.status-cancelled {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}

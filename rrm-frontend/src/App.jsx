@@ -2,6 +2,7 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import CatalogPage from './pages/CatalogPage.jsx';
 import ResourceDetailsPage from './pages/ResourceDetailsPage.jsx';
+import TeamReservationsPage from './pages/TeamReservationsPage.jsx';
 
 /**
  * Rutele aplicatiei.
@@ -17,6 +18,7 @@ export default function App() {
             path="/resources/:resourceId"
             element={<ResourceDetailsPage />}
           />
+          <Route path="/reservations" element={<TeamReservationsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
