@@ -11,6 +11,11 @@ from app.schemas import CategoryOut, ResourceIn, ResourceOut
 router = APIRouter(prefix="/api", tags=["Resources"])
 
 
+def _check_category(db: Session, category_id: int | None):
+    if category_id is not None and db.get(Category, category_id) is None:
+        raise HTTPException(status_code=400, detail="Categoria nu exista")
+
+
 @router.get("/categories", response_model=list[CategoryOut])
 def get_categories(db: Session = Depends(get_db)):
     return db.scalars(select(Category).order_by(Category.id)).all()
@@ -37,13 +42,10 @@ def get_resource(resource_id: int, db: Session = Depends(get_db)):
 def create_resource(data: ResourceIn,
                     _admin=Depends(require_roles("ADMIN")),
                     db: Session = Depends(get_db)):
+    _check_category(db, data.category_id)
     resource = Resource(**data.model_dump())
     db.add(resource)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Categorie invalida")
+    db.commit()
     db.refresh(resource)
     return resource
 
@@ -55,13 +57,10 @@ def update_resource(resource_id: int, data: ResourceIn,
     resource = db.get(Resource, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Resursa nu exista")
+    _check_category(db, data.category_id)
     for key, value in data.model_dump().items():
         setattr(resource, key, value)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Categorie invalida")
+    db.commit()
     db.refresh(resource)
     return resource
 
