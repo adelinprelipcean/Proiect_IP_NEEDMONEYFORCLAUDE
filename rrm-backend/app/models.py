@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import (Boolean, Date, DateTime, ForeignKey, Numeric, String,
+                        Text, func)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -53,3 +54,15 @@ class Maintenance(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime)
     reason: Mapped[str | None] = mapped_column(String(255))
     admin_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    message: Mapped[str] = mapped_column(String(255))
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now()
+    )
