@@ -9,7 +9,7 @@ import {formatPrice} from '../utils/format.js';
  * @return {JSX.Element}
  */
 export default function AdminMaintenancePage() {
-  const {user} = useOutletContext();
+  const {user, loading} = useOutletContext();
   const [resources, setResources] = useState([]);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
@@ -19,6 +19,9 @@ export default function AdminMaintenancePage() {
     getResources().then(setResources).catch((e) => setError(e.message));
   }, []);
 
+  if (loading) {
+    return <p className="muted">Se incarca...</p>;
+  }
   if (user?.role !== 'ADMIN') {
     return (
       <p className="message">

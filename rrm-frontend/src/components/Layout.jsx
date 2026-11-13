@@ -13,7 +13,7 @@ const ROLE_LABELS = {
  * @return {JSX.Element}
  */
 export default function Layout() {
-  const {user} = useCurrentUser();
+  const {user, loading} = useCurrentUser();
 
   const handleLogout = () => {
     clearToken();
@@ -44,7 +44,7 @@ export default function Layout() {
         )}
       </header>
       <main className="content">
-        <Outlet context={{user}} />
+        <Outlet context={{user, loading}} />
       </main>
     </div>
   );
