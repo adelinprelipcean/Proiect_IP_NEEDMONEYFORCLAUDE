@@ -1,5 +1,6 @@
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import Layout from './components/Layout.jsx';
+import CatalogPage from './pages/CatalogPage.jsx';
 
 /**
  * Rutele aplicatiei.
@@ -10,7 +11,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<p>Catalog</p>} />
+          <Route path="/" element={<CatalogPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
