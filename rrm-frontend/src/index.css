@@ -303,3 +303,8 @@ h3 {
   color: var(--color-danger);
   border-color: var(--color-danger);
 }
+
+.table-actions {
+  text-align: right;
+  white-space: nowrap;
+}
