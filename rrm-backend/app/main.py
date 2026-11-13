@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import (auth, notifications, reservations, resources,
-                         users)
+from app.routers import (auth, maintenance, notifications, reservations,
+                         resources, users)
 
 app = FastAPI(title="Research Resource Manager API")
 
@@ -17,6 +17,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(resources.router)
 app.include_router(reservations.router)
+app.include_router(maintenance.router)
 app.include_router(notifications.router)
 
 

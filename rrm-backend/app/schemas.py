@@ -113,3 +113,14 @@ class ReservationOut(BaseModel):
     discount: float
     final_price: float | None
     status: str
+
+
+class MaintenanceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    resource_id: int
+    start_time: datetime
+    end_time: datetime
+    reason: str | None
+    admin_id: int | None
