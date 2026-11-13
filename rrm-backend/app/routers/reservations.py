@@ -2,6 +2,7 @@ from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -95,7 +96,12 @@ def create_reservation(data: ReservationIn,
         status="PENDING",
     )
     db.add(reservation)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409,
+                            detail="Intervalul este deja rezervat")
     db.refresh(reservation)
     return reservation
 
