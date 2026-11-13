@@ -1,9 +1,28 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
+
+
+class Team(Base):
+    __tablename__ = "teams"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(100), unique=True)
+    password: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str] = mapped_column(String(100))
+    role: Mapped[str] = mapped_column(String(20))
+    affiliation_date: Mapped[date] = mapped_column(Date)
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"))
 
 
 class Category(Base):
