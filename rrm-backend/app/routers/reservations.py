@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Resource
-from app.schemas import SlotOut
-from app.services.reservations import (overlapping_maintenance,
+from app.deps import require_roles
+from app.models import Reservation, Resource, User
+from app.schemas import ReservationIn, ReservationOut, SlotOut
+from app.services.pricing import calculate_price
+from app.services.reservations import (find_conflict, overlapping_maintenance,
                                        overlapping_reservations)
 
 router = APIRouter(prefix="/api/reservations", tags=["Reservations"])
@@ -54,3 +56,42 @@ def get_availability(resource_id: int, week: date,
             slots.append(SlotOut(start_time=start, end_time=end,
                                  status=status))
     return slots
+
+
+@router.post("", response_model=ReservationOut, status_code=201)
+def create_reservation(data: ReservationIn,
+                       user: User = Depends(require_roles("LEAD")),
+                       db: Session = Depends(get_db)):
+    """Creeaza rezervarea in starea PENDING, cu pretul calculat."""
+    team_id = data.team_id if data.team_id is not None else user.team_id
+    if team_id is None or team_id != user.team_id:
+        raise HTTPException(status_code=403,
+                            detail="Poti rezerva doar pentru echipa ta")
+    if data.start_time < datetime.now():
+        raise HTTPException(status_code=400,
+                            detail="Nu poti rezerva un interval din trecut")
+    resource = db.get(Resource, data.resource_id)
+    if resource is None:
+        raise HTTPException(status_code=404, detail="Resursa nu exista")
+
+    conflict = find_conflict(db, resource.id, data.start_time, data.end_time)
+    if conflict:
+        raise HTTPException(status_code=409, detail=conflict)
+
+    quote = calculate_price(resource.price_per_hour, data.start_time,
+                            data.end_time, user.affiliation_date)
+    reservation = Reservation(
+        resource_id=resource.id,
+        team_id=team_id,
+        user_id=user.id,
+        start_time=data.start_time,
+        end_time=data.end_time,
+        price=quote.price,
+        discount=quote.discount,
+        final_price=quote.final_price,
+        status="PENDING",
+    )
+    db.add(reservation)
+    db.commit()
+    db.refresh(reservation)
+    return reservation
