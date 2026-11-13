@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import (BaseModel, ConfigDict, Field, field_validator,
+                      model_validator)
 
 
 class CategoryOut(BaseModel):
@@ -69,3 +70,38 @@ class NotificationOut(BaseModel):
     message: str
     is_read: bool
     created_at: datetime
+
+
+class SlotOut(BaseModel):
+    start_time: datetime
+    end_time: datetime
+    status: str  # FREE, BOOKED, MAINTENANCE, PAST
+
+
+class ReservationIn(BaseModel):
+    resource_id: int
+    team_id: int | None = None
+    start_time: datetime
+    end_time: datetime
+
+    @model_validator(mode="after")
+    def check_interval(self):
+        if self.end_time <= self.start_time:
+            raise ValueError("Ora de sfarsit trebuie sa fie dupa ora de start")
+        return self
+
+
+class ReservationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    resource_id: int
+    resource_name: str | None = None
+    team_id: int
+    user_id: int
+    start_time: datetime
+    end_time: datetime
+    price: float | None
+    discount: float
+    final_price: float | None
+    status: str
